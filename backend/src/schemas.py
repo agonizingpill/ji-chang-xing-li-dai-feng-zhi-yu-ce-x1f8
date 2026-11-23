@@ -7,3 +7,10 @@ class ForecastIn(BaseModel): wave_id: int; window_size: int = Field(default=8, g
 class ShiftIn(BaseModel): shift_code: str; wave_id: int; start_at: datetime; end_at: datetime; planned_staff: int = Field(ge=0); capacity: int = Field(gt=0)
 class ConfirmIn(BaseModel): note: str = Field(min_length=3)
 class ReviewIn(BaseModel): wave_id: int; forecast_id: int | None = None; observed_peak: int = Field(ge=0); queue_minutes: int = Field(ge=0); cause: str = Field(min_length=2); action: str = Field(min_length=2)
+class RerouteTrialIn(BaseModel):
+    disabled_belt_code: str = Field(min_length=2, max_length=40)
+    backup_belt_code: str = Field(min_length=2, max_length=40)
+    stop_at: datetime
+    window_size: int = Field(default=8, ge=4, le=24)
+class BeltCapacityIn(BaseModel): capacity_bags: float = Field(gt=0, le=100000)
+class RerouteConfirmIn(BaseModel): note: str = Field(min_length=3, max_length=500)

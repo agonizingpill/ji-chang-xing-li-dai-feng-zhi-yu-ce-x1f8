@@ -1,0 +1,49 @@
+/* 行李带停用改送值班页面 */
+.reroute-belt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:22px}
+.reroute-belt{background:#fff;border:1px solid var(--line);border-radius:7px;padding:18px 19px;box-shadow:var(--shadow)}
+.reroute-belt.backup{border-left:4px solid var(--orange)}
+.reroute-belt.disabled{opacity:.72;background:#f8faf9}
+.reroute-belt h4{font:600 16px 'Space Grotesk';margin:0 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.reroute-belt .belt-meta{font:10px 'DM Mono';color:var(--muted);margin-bottom:14px}
+.belt-peak{display:flex;justify-content:space-between;align-items:end;border-top:1px solid #edf0ef;padding-top:12px}
+.belt-peak strong{font:700 26px 'Space Grotesk';color:var(--orange);display:block}
+.belt-peak small{font:10px 'DM Mono';color:var(--muted)}
+.cap-pill{font:10px 'DM Mono';border:1px solid #cfdad9;border-radius:3px;padding:4px 7px;color:var(--navy);white-space:nowrap}
+.cap-pill.over{background:#fdebed;color:var(--red);border-color:#f0c9cb}
+.backlog-tag{display:inline-block;background:#fff0e8;color:#d15b31;border-radius:3px;font:10px 'DM Mono';padding:4px 7px;margin-top:8px}
+.backlog-tag.zero{background:#edf4f2;color:var(--green)}
+.belt-cap-form{display:flex;gap:8px;margin-top:12px;border-top:1px solid #edf0ef;padding-top:12px}
+.belt-cap-form input{margin-top:0;padding:8px 10px;font:12px 'DM Mono'}
+.reroute-tag{font:9px 'DM Mono';padding:3px 6px;border-radius:3px;background:#eef1f2;color:#7a878a}
+.reroute-tag.backup-flag{background:#fff0ea;color:var(--orange)}
+.reroute-tag.live{background:#e8f4f0;color:var(--green)}
+.reroute-plan{border:1px solid #e5eae9;border-radius:7px;margin-bottom:14px;overflow:hidden}
+.reroute-plan.superseded{opacity:.75;background:#fafbfb}
+.reroute-plan.confirmed{border-color:#b9d8d0}
+.plan-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 18px;background:#f8faf9;border-bottom:1px solid #edf0ef;flex-wrap:wrap}
+.reroute-plan.confirmed .plan-head{background:#f1f8f6}
+.plan-head b{font:13px 'DM Mono'}
+.plan-head .plan-sub{font:10px 'DM Mono';color:var(--muted);margin-top:4px}
+.plan-actions{display:flex;gap:8px;flex-wrap:wrap}
+.slot-table{width:100%;border-collapse:collapse;font-size:11px}
+.slot-table th{background:#f8faf9;padding:9px 12px;font:9px 'DM Mono';letter-spacing:.05em;color:var(--muted);text-align:left}
+.slot-table td{padding:9px 12px;border-top:1px solid #edf0ef}
+.slot-table td.num{font-family:'DM Mono'}
+.over-num{color:var(--red);font-weight:600}
+.queue-num{color:#d15b31;font-family:'DM Mono';font-weight:500}
+.plan-section-title{font:10px 'DM Mono';letter-spacing:.08em;color:var(--muted);margin:16px 18px 8px}
+.wave-chip-row{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 14px}
+.wave-chip{background:#eef5f3;color:var(--green);border-radius:20px;padding:6px 12px;font:11px 'DM Mono'}
+.wave-chip .moved{color:var(--orange)}
+.stale-banner{background:#fff0e8;color:#b7502c;border-radius:5px;padding:10px 14px;font-size:12px;margin:12px 18px;line-height:1.6}
+.trial-form{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr)) auto;gap:12px;align-items:end;background:#fff;border:1px solid var(--line);border-radius:7px;padding:18px 20px;box-shadow:var(--shadow);margin-bottom:22px}
+.trial-form label{margin:0;font-size:11px}
+.trial-form .primary{white-space:nowrap}
+@media(max-width:1100px){.trial-form{grid-template-columns:1fr 1fr}}
+@media(max-width:720px){.trial-form{grid-template-columns:1fr}.slot-table{min-width:560px}.slot-scroll{overflow:auto}}
+.baseline-detail{margin-top:10px;border-top:1px dashed #e0e6e5;padding-top:10px}
+.baseline-detail summary{font:10px 'DM Mono';color:var(--muted);cursor:pointer}
+.baseline-detail .mini-bars{display:flex;align-items:end;gap:5px;height:46px;margin-top:10px}
+.baseline-detail .mini-bars i{flex:1;background:#cfe0dc;border-radius:2px 2px 0 0;min-height:3px;display:block;position:relative}
+.baseline-detail .mini-bars i.peak{background:var(--orange)}
+.baseline-detail .wave-label{font:10px 'DM Mono';color:var(--muted);margin-top:6px}

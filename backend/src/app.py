@@ -6,6 +6,8 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from .casework_routes import router as operational_cases
 from .operations_evidence import router as operations_evidence
+from .reroute_routes import router as reroute
+from . import reroute_service
 from .auth import current_user, issue, password_hash, require
 from .db import audit, connect, migrate, wait_for_db
 from .schemas import Login, WaveIn, CountIn, ForecastIn, ShiftIn, ConfirmIn, ReviewIn
@@ -23,6 +25,7 @@ async def lifespan(_):
 app=FastAPI(title='机场行李带峰值预测', lifespan=lifespan)
 app.include_router(operational_cases)
 app.include_router(operations_evidence)
+app.include_router(reroute)
 @app.middleware('http')
 async def guard(request: Request, call_next):
     started=time.monotonic()
@@ -68,7 +71,7 @@ def create_count(data:CountIn,user=Depends(require('operator','supervisor'))):
         if not wave: raise HTTPException(404,'航班波次不存在')
         try: row=conn.execute('INSERT INTO belt_counts(wave_id,belt_code,counted_at,bag_count,scan_source) VALUES (%s,%s,%s,%s,%s) RETURNING *',(data.wave_id,data.belt_code,data.counted_at,data.bag_count,data.scan_source)).fetchone()
         except Exception as exc: raise HTTPException(409,'同一航班波次、行李带和时间不能重复计数') from exc
-        conn.execute("UPDATE flight_waves SET status='counting' WHERE id=%s AND status='open'",(data.wave_id,)); audit(conn,user['id'],'create','belt_count',row['id'],{'wave_id':data.wave_id}); conn.commit(); return row
+        conn.execute("UPDATE flight_waves SET status='counting' WHERE id=%s AND status='open'",(data.wave_id,)); reroute_service.invalidate_open_trials(conn,[data.belt_code],'补报行李带计数，试算依据变化'); audit(conn,user['id'],'create','belt_count',row['id'],{'wave_id':data.wave_id}); conn.commit(); return row
 @app.get('/forecasts')
 def forecasts(user=Depends(current_user)):
     with connect() as conn: return dump(conn.execute('SELECT f.*,w.code,w.terminal FROM peak_forecasts f JOIN flight_waves w ON w.id=f.wave_id ORDER BY f.id DESC').fetchall())

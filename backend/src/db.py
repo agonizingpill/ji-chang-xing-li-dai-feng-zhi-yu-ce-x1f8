@@ -56,6 +56,23 @@ def migrate():
           observed_peak INT NOT NULL CHECK (observed_peak >= 0), queue_minutes INT NOT NULL CHECK (queue_minutes >= 0), cause TEXT NOT NULL,
           action TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','actioned','closed')), reviewed_by INT REFERENCES users(id), reviewed_at TIMESTAMPTZ
         );
+        CREATE TABLE IF NOT EXISTS belts (
+          id SERIAL PRIMARY KEY, belt_code TEXT UNIQUE NOT NULL, belt_name TEXT NOT NULL,
+          terminal TEXT NOT NULL, capacity_bags NUMERIC(10,2) NOT NULL CHECK (capacity_bags > 0),
+          is_backup BOOLEAN NOT NULL DEFAULT FALSE, active BOOLEAN NOT NULL DEFAULT TRUE,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
+        CREATE TABLE IF NOT EXISTS belt_reroute_plans (
+          id SERIAL PRIMARY KEY, disabled_belt_code TEXT NOT NULL, backup_belt_code TEXT NOT NULL,
+          stop_at TIMESTAMPTZ NOT NULL, window_size INT NOT NULL DEFAULT 8,
+          status TEXT NOT NULL DEFAULT 'trial' CHECK (status IN ('trial','superseded','confirmed')),
+          stale_reason TEXT NOT NULL DEFAULT '', basis_hash TEXT NOT NULL,
+          trial_result JSONB NOT NULL DEFAULT '{}'::jsonb, confirmed_result JSONB NOT NULL DEFAULT '{}'::jsonb,
+          affected_wave_ids INTEGER[] NOT NULL DEFAULT '{}', confirmed_forecast_ids INTEGER[] NOT NULL DEFAULT '{}',
+          created_by INT REFERENCES users(id), confirmed_by INT REFERENCES users(id),
+          confirmed_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
+        CREATE INDEX IF NOT EXISTS idx_reroute_plans_status ON belt_reroute_plans(status, updated_at DESC);
         CREATE TABLE IF NOT EXISTS audit_logs (
           id SERIAL PRIMARY KEY, actor_id INT REFERENCES users(id), action TEXT NOT NULL, entity_type TEXT NOT NULL, entity_id INT, detail JSONB NOT NULL DEFAULT '{}'::jsonb, created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );
