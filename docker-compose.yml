@@ -1,0 +1,87 @@
+name: airport-baggage-peaks
+x-app-env: &app-env
+  DATABASE_URL: postgresql://airport:${POSTGRES_PASSWORD:-airport-demo-db}@db:5432/airport_ops
+  REDIS_URL: redis://redis:6379/0
+  JWT_SECRET: ${JWT_SECRET:-airport-baggage-peaks-local-secret}
+  SEED_DEMO: ${SEED_DEMO:-true}
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-airport-baggage-peaks}-db
+    environment:
+      POSTGRES_DB: airport_ops
+      POSTGRES_USER: airport
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airport-demo-db}
+    ports:
+      - "127.0.0.1:${DB_PORT:-17771}:5432"
+    volumes:
+      - airport-baggage-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airport -d airport_ops"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
+  redis:
+    image: redis:7-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-airport-baggage-peaks}-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - airport-baggage-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 4s
+      timeout: 3s
+      retries: 15
+  backend:
+    build: ./backend
+    container_name: ${COMPOSE_PROJECT_NAME:-airport-baggage-peaks}-backend
+    command: ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment: *app-env
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-19271}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - airport-baggage-shared:/shared
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
+  worker:
+    build: ./backend
+    container_name: ${COMPOSE_PROJECT_NAME:-airport-baggage-peaks}-worker
+    command: ["python", "-m", "src.worker"]
+    environment: *app-env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - airport-baggage-shared:/shared
+    healthcheck:
+      test: ["CMD", "python", "-c", "from pathlib import Path; import time; p=Path('/shared/worker-heartbeat'); assert p.exists() and time.time()-p.stat().st_mtime < 20"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  frontend:
+    build: ./frontend
+    container_name: ${COMPOSE_PROJECT_NAME:-airport-baggage-peaks}-frontend
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-18271}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
+volumes:
+  airport-baggage-db:
+  airport-baggage-redis:
+  airport-baggage-shared:
